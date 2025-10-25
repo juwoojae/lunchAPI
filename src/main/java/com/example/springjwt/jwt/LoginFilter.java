@@ -44,14 +44,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     //authenticationManger 의 검증이 성공했으면 실행하는 메서드
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        log.info("successfulAuthentication");
         CustomUserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
 
         String username = customUserDetails.getUsername();
         String role = customUserDetails.getRole();
 
-        String token = jwtUtil.cresteJwt(username, role);
-        log.info("create token: {}", token);
+        String token = jwtUtil.createJwt(username, role);
         jwtUtil.addJwtToHeader(response, token);
     }
     //authenticationManger 의 검증이 실패했으면 실행하는 메서드

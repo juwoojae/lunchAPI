@@ -22,6 +22,7 @@ public class JoinController {
     public String joinProcess(@RequestBody JoinDto joinDto) {
         log.info("username: {}", joinDto.getUsername());
         log.info("password: {}", joinDto.getPassword());
+        log.info("role: {}", joinDto.getRole());
         joinService.joinProcess(joinDto);
         return "ok";
     }
