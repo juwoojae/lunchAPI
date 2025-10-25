@@ -5,11 +5,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
+@NoArgsConstructor
 public class UserEntity {
 
     @Id
@@ -21,4 +22,10 @@ public class UserEntity {
     private String username;
 
     private String role;
+
+    public UserEntity(String password, String role, String username) {
+        this.password = password;
+        this.role = role;
+        this.username = username;
+    }
 }
