@@ -13,6 +13,9 @@ public class JoinController {
 
     private final JoinService joinService;
 
+    /**
+     * 회원 가입처리 컨트롤러
+     */
     @PostMapping("/join")
     public String joinProcess(@RequestBody JoinDto joinDto) {
         joinService.joinProcess(joinDto);
