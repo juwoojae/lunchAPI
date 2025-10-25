@@ -27,6 +27,7 @@ public class JoinService {
             return;
         }
         UserEntity data = new UserEntity(username,bCryptPasswordEncoder.encode(password),"ROLE_USER");
+
         userRepository.save(data);
     }
 }

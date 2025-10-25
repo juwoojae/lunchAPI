@@ -1,5 +1,6 @@
 package com.example.springjwt.config;
 
+import com.example.springjwt.jwt.JwtUtil;
 import com.example.springjwt.jwt.LoginFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -25,8 +26,10 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
 
+    private final JwtUtil jwtUtil;
+
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
@@ -51,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin").hasRole("ADMIN")  //ADMIN 권한에 대해서만 허용
                         .anyRequest().authenticated()); //그 이외 로그인한 사용자에 대해 허용
         http //로그인 필터 추가
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http

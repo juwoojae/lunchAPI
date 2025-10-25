@@ -7,12 +7,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
     private final UserEntity userEntity;
+
+    public String getRole() {
+        return userEntity.getRole();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
