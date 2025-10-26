@@ -49,6 +49,12 @@ public class JwtFilter extends OncePerRequestFilter {
         log.info("doFilter (next)");
         filterChain.doFilter(request, response);
     }
+
+    /**
+     * 인가 Authorization 에서 이제
+     * authentication 객체를 만들고, 이객체를 SecurityContextHolder 에 넣으면 요청마다
+     * 일시적으로 세션을 생성한다
+     */
         // 인증 처리
         public void setAuthentication (String username){
             SecurityContext context = SecurityContextHolder.createEmptyContext();
