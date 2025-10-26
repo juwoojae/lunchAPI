@@ -19,7 +19,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final String AUTHORIZATION_HEADER = "Authorization";//쿠키의 name 값
+    public static final String AUTHORIZATION_HEADER = "Authorization";//쿠키의 name 값
     //HMAC 알고리즘
     private static final MacAlgorithm MAC_ALGORITHM = Jwts.SIG.HS256;
     //사용자 id 의 key
@@ -27,7 +27,7 @@ public class JwtUtil {
     //사용자 role 의 key
     private static final String CLAIM_ROLE = "role";
     //토큰 식별자
-    public static final String BEARER_PREFIX = "Bearer "; // 규칙 토큰 앞에 붙이는것
+    private static final String BEARER_PREFIX = "Bearer "; // 규칙 토큰 앞에 붙이는것
     // 토큰 만료시간
     private final long TOKEN_TIME = 60 * 60 * 1000L; // 60분
 

@@ -3,7 +3,9 @@ package com.example.springjwt.config;
 import com.example.springjwt.jwt.JwtFilter;
 import com.example.springjwt.jwt.JwtUtil;
 import com.example.springjwt.jwt.LoginFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.file.ConfigurationSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +18,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.Collections;
 
 /**
  * 스프링 시큐리티의 인가 및 설정을 담당하는 클래스이다.
@@ -41,7 +47,25 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        //CORS 설정
+        http
+                .cors((cors) -> cors
+                        .configurationSource(new CorsConfigurationSource() {
 
+                            @Override
+                            public CorsConfiguration getCorsConfiguration(HttpServletRequest request){
+                                CorsConfiguration configuration = new CorsConfiguration();
+
+                                configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                                configuration.setAllowedMethods(Collections.singletonList("*"));
+                                configuration.setAllowCredentials(true);
+                                configuration.setAllowedHeaders(Collections.singletonList("*"));
+                                configuration.setMaxAge(3600L);
+                                configuration.setExposedHeaders(Collections.singletonList(JwtUtil.AUTHORIZATION_HEADER));
+
+                                return configuration;
+                            }
+                        }));
         //csrf disable JWT 에서는 굳이 방어할 필요가 없다
         http
                 .csrf((auth) -> auth.disable());
@@ -55,7 +79,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin").hasRole("ADMIN")  //ADMIN 권한에 대해서만 허용
                         .anyRequest().authenticated()); //그 이외 로그인한 사용자에 대해 허용
         http
-                .addFilterBefore(new JwtFilter(jwtUtil,userDetailsService), LoginFilter.class);
+                .addFilterBefore(new JwtFilter(jwtUtil, userDetailsService), LoginFilter.class);
         http //로그인 필터 추가
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
