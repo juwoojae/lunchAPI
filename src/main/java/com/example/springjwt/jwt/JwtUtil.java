@@ -57,7 +57,7 @@ public class JwtUtil {
 
     public String createJwt(String username, String role) {
         return Jwts.builder()
-                .claim(CLAIM_USERNAME, username)
+                .claim(CLAIM_USERNAME, username) //표준 클레임
                 .claim(CLAIM_ROLE, role) //payload 에 key - value 형태로 들어간다
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + TOKEN_TIME))
@@ -74,13 +74,11 @@ public class JwtUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
     }
     public String getUsername(String token) {
-
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username", String.class);
+        return getClaimsFromToken(token).get("username", String.class);
     }
 
     public String getRole(String token) {
-
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
+        return getClaimsFromToken(token).get("role", String.class);
     }
 
 
