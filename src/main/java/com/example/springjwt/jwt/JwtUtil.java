@@ -1,88 +1,85 @@
 package com.example.springjwt.jwt;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.MacAlgorithm;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+
+import static com.example.springjwt.jwt.JwtConst.*;
 
 @Slf4j
 @Component
 public class JwtUtil {
 
-    public static final String AUTHORIZATION_HEADER = "Authorization";//쿠키의 name 값
-    //HMAC 알고리즘
-    private static final MacAlgorithm MAC_ALGORITHM = Jwts.SIG.HS256;
-    //사용자 id 의 key
-    private static final String CLAIM_USERNAME = "username";
-    //사용자 role 의 key
-    private static final String CLAIM_ROLE = "role";
-    //토큰 식별자
-    private static final String BEARER_PREFIX = "Bearer "; // 규칙 토큰 앞에 붙이는것
-    // 토큰 만료시간
-    private final long TOKEN_TIME = 60 * 60 * 1000L; // 60분
-
     private final SecretKey secretKey;
 
-    //secret 을 통해서 SecretKey 객체를 생성
     public JwtUtil(@Value("${spring.jwt.secret}") String secret) {
         secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), MAC_ALGORITHM.key().build().getAlgorithm());
     }
 
-    public boolean validateToken(String token) {
-        try {
-            //토큰의 위/변조가 있는지, 만료가 되지는 않았는지 확인할수 있다
-            Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException | SignatureException e) {
-            log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
-        } catch (ExpiredJwtException e) {
-            log.error("Expired JWT token, 만료된 JWT token 입니다.");
-        } catch (UnsupportedJwtException e) {
-            log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
-        } catch (IllegalArgumentException e) {
-            log.error("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
-        }
-        return false;
+    /**
+     * Jwt Signature 가 만료되었는지 검증
+     */
+    public Boolean isExpired(String token) {
+        return getClaims(token).getExpiration().before(new Date());
     }
 
-    public String createJwt(String username, String role) {
+    /**
+     * Jwt Signature 의 위조 + 만료 검증
+     */
+
+    public Claims getClaims(String token) {//정보를 찾아오려면 시큐리티 키값이 필요함
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
+    }
+        /**
+         * Jwt 토큰을 만들어서 반환하는 함수
+         */
+    public String createJwt(Category category, String email, String role, Long expiredMs) {
         return Jwts.builder()
-                .claim(CLAIM_USERNAME, username) //표준 클레임
+                .claim(CLAIM_CATEGORY, category) // (Access / Refresh)
+                .claim(CLAIM_EMAIL, email) //표준 클레임
                 .claim(CLAIM_ROLE, role) //payload 에 key - value 형태로 들어간다
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + TOKEN_TIME))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey) //signature 만들기
                 .compact();
     }
 
+    /**
+     * JWT 를 HTTP 헤더에 추가하기
+     */
     public void addJwtToHeader(HttpServletResponse response, String token) {
-        response.addHeader(AUTHORIZATION_HEADER, BEARER_PREFIX + token);
+        response.addHeader(ACCESS_HEADER, BEARER_PREFIX + token);
     }
 
-    // 토큰에서 사용자 정보 가져오기 Payload 가지고 오기
-    public Claims getClaimsFromToken(String token) {//정보를 찾아오려면 시큐리티 키값이 필요함
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
-    }
-    public String getUsername(String token) {
-        return getClaimsFromToken(token).get("username", String.class);
-    }
+    /**
+     * JWT 를 Cookie 에 저장하기
+     */
+    public void addJwtToCookie(HttpServletResponse response, String token) {
+        try {
+            token = URLEncoder.encode(token, "utf-8").replaceAll("\\+", "%20"); // Cookie Value 에는 공백이 불가능해서 encoding 진행
 
-    public String getRole(String token) {
-        return getClaimsFromToken(token).get("role", String.class);
+            Cookie cookie = new Cookie(REFRESH_HEADER, token); // Name-Value
+            cookie.setMaxAge(24 * 60 * 60);
+            //setSecure(true) // 테스트를 위해 잠시 주석처리
+            cookie.setPath("/");
+            cookie.setHttpOnly(true);
+
+            response.addCookie(cookie);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e.getMessage());
+        }
     }
-
-
     public String getTokenFromHeader(HttpServletRequest request) {
-        return request.getHeader(AUTHORIZATION_HEADER);
+        return request.getHeader(ACCESS_HEADER);
     }
 }

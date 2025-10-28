@@ -23,6 +23,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Collections;
 
+import static com.example.springjwt.jwt.JwtConst.ACCESS_HEADER;
+
 /**
  * 스프링 시큐리티의 인가 및 설정을 담당하는 클래스이다.
  */
@@ -61,7 +63,7 @@ public class SecurityConfig {
                                 configuration.setAllowCredentials(true);
                                 configuration.setAllowedHeaders(Collections.singletonList("*"));
                                 configuration.setMaxAge(3600L);
-                                configuration.setExposedHeaders(Collections.singletonList(JwtUtil.AUTHORIZATION_HEADER));
+                                configuration.setExposedHeaders(Collections.singletonList(ACCESS_HEADER));
 
                                 return configuration;
                             }
@@ -75,7 +77,7 @@ public class SecurityConfig {
         //글로벌 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/", "/join").permitAll() //모든 권한에 대해서 허용
+                        .requestMatchers("/login", "/join").permitAll() //모든 권한에 대해서 허용
                         .requestMatchers("/admin").hasRole("ADMIN")  //ADMIN 권한에 대해서만 허용
                         .anyRequest().authenticated()); //그 이외 로그인한 사용자에 대해 허용
         http

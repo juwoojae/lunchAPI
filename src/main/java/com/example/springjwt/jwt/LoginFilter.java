@@ -16,42 +16,51 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-@Slf4j
+import static com.example.springjwt.jwt.JwtConst.*;
+
+@Slf4j(topic = "LoginFilter")
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager; //얘가 검증처리하는얘임
     private final JwtUtil jwtUtil;
 
-    //로그인 검증을 하기위한 (Authentication) 에 넣어주기 위한
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         LoginRequestDto requestDto = null;
         try {
             requestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
         } catch (IOException e) {
+            log.info("ObjectMapper parse error");
             throw new RuntimeException(e.getMessage());
         }
         return authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        requestDto.getUsername(),
+                        requestDto.getEmail(),
                         requestDto.getPassword(),
                         null
                 )
         );
     }
-    //authenticationManger 의 검증이 성공했으면 실행하는 메서드
+
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
+
         CustomUserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
-
-        String username = customUserDetails.getUsername();
+        //유저 정보
+        String email = customUserDetails.getUsername();
         String role = customUserDetails.getRole();
+        //토큰 생성
+        String accessToken = jwtUtil.createJwt(Category.ACCESS, email, role, ACCESSTOKEN_TIME);
+        String refreshToken = jwtUtil.createJwt(Category.REFRESH, email, role, REFRESH_TOKEN_TIME);
 
-        String token = jwtUtil.createJwt(username, role);
-        jwtUtil.addJwtToHeader(response, token);
+        jwtUtil.addJwtToHeader(response, accessToken); //Access 토큰 Http헤더에 넣기
+        jwtUtil.addJwtToCookie(response, refreshToken); //Refresh 토큰 쿠키에 넣기
     }
+
     //authenticationManger 의 검증이 실패했으면 실행하는 메서드
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {

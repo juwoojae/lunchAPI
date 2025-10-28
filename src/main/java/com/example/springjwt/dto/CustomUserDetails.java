@@ -13,6 +13,9 @@ public class CustomUserDetails implements UserDetails {
 
     private final UserEntity userEntity;
 
+    /**
+     *  UserDetails 에서 Role 꺼내오기
+     */
     public String getRole() {
         return userEntity.getRole();
     }
@@ -38,7 +41,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userEntity.getUsername();
+        return userEntity.getEmail();
     }
 
     @Override

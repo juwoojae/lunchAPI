@@ -1,6 +1,8 @@
 package com.example.springjwt.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,36 +31,35 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         //request 에서 Authorization 헤더를 찾음
         String tokenValue = jwtUtil.getTokenFromHeader(request);
+
+        Claims claims ;
+
         if (StringUtils.hasText(tokenValue)) {
-            // JWT 토큰 substring
-            String token = tokenValue.split(" ")[1]; //식별자 걷어내기
-            log.info("token: {}", token);
-            if (!jwtUtil.validateToken(token)) { //토큰이 위조되지 않았는지 확인
-                log.error("Token Error");
+            String token = tokenValue.split(" ")[1]; //식별자 걷어내기 subString
+            try {
+                claims = jwtUtil.getClaims(token);
+            } catch (ExpiredJwtException e) {  //만약 토큰이 만료가 되었다면
+                log.error("Token expired");
+                return;
+            } catch (JwtException e) {  //토큰이 위조 되었다면
+                log.error("Invalid token");
                 return;
             }
-            String username = jwtUtil.getUsername(token);
+            String email = claims.get("email", String.class);
             try {
-
-                setAuthentication(username); //여기서 문제
+                setAuthentication(email);
             } catch (Exception e) {
+                e.printStackTrace();
                 log.error(e.getMessage());
                 return;
             }
         }
-        log.info("doFilter (next)");
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * 인가 Authorization 에서 이제
-     * authentication 객체를 만들고, 이객체를 SecurityContextHolder 에 넣으면 요청마다
-     * 일시적으로 세션을 생성한다
-     */
         // 인증 처리
         public void setAuthentication (String username){
             SecurityContext context = SecurityContextHolder.createEmptyContext();
-            //인증 Filter 에서는 권한 까지는 토큰에 담기지 않았지만 여기서는 토큰에 권한을 담는다
             Authentication authentication = createAuthentication(username); //유저 정보로 인증 객체 생성
 
             context.setAuthentication(authentication);

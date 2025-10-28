@@ -1,31 +1,33 @@
 package com.example.springjwt.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Getter
 @NoArgsConstructor
-public class UserEntity {
+public class UserEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     private String password;
 
-    private String username;
+    @Column(unique = true)
+    String email;
+
+    private String name;
 
     private String role;
 
-    public UserEntity(String username, String password, String role) {
-        this.username = username;
+    public UserEntity(String email,String name, String password, String role) {
+        this.email = email;
         this.password = password;
+        this.name = name;
         this.role = role;
     }
 }
