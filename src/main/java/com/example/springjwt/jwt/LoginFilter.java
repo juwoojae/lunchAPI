@@ -16,20 +16,30 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.example.springjwt.jwt.JwtConst.*;
 
 @Slf4j(topic = "LoginFilter")
-@RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager; //얘가 검증처리하는얘임
     private final JwtUtil jwtUtil;
 
+    public LoginFilter(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        setFilterProcessesUrl("/api/auth/login"); //로그인 처리 (Post /api/user/login)
+    }
+
+    public LoginFilter(AuthenticationManager authenticationManager, AuthenticationManager authenticationManager1, JwtUtil jwtUtil) {
+        super(authenticationManager);
+        this.authenticationManager = authenticationManager1;
+        this.jwtUtil = jwtUtil;
+    }
+
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        log.info("attemptAuthentication");
         LoginRequestDto requestDto = null;
         try {
             requestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
@@ -54,8 +64,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String email = customUserDetails.getUsername();
         String role = customUserDetails.getRole();
         //토큰 생성
-        String accessToken = jwtUtil.createJwt(Category.ACCESS, email, role, ACCESSTOKEN_TIME);
-        String refreshToken = jwtUtil.createJwt(Category.REFRESH, email, role, REFRESH_TOKEN_TIME);
+        String accessToken = jwtUtil.createJwt(CATEGORY_ACCESS, email, role, ACCESSTOKEN_TIME);
+        String refreshToken = jwtUtil.createJwt(CATEGORY_REFRESH, email, role, REFRESH_TOKEN_TIME);
 
         jwtUtil.addJwtToHeader(response, accessToken); //Access 토큰 Http헤더에 넣기
         jwtUtil.addJwtToCookie(response, refreshToken); //Refresh 토큰 쿠키에 넣기

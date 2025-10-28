@@ -9,9 +9,9 @@ import java.util.Date;
 @Getter
 @AllArgsConstructor
 public class JoinResponseDto {
-    private Long id;
-    private String email;
-    private String name;
-    private String role;
-    private LocalDateTime createdAt;
+    private final Long id;
+    private final String email;
+    private final String name;
+    private final String role;
+    private final LocalDateTime createdAt;
 }

@@ -77,9 +77,10 @@ public class SecurityConfig {
         //글로벌 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/join").permitAll() //모든 권한에 대해서 허용
+                        .requestMatchers("/api/auth/**").permitAll() //모든 권한에 대해서 허용
                         .requestMatchers("/admin").hasRole("ADMIN")  //ADMIN 권한에 대해서만 허용
                         .anyRequest().authenticated()); //그 이외 로그인한 사용자에 대해 허용
+
         http
                 .addFilterBefore(new JwtFilter(jwtUtil, userDetailsService), LoginFilter.class);
         http //로그인 필터 추가

@@ -1,5 +1,6 @@
 package com.example.springjwt.jwt;
 
+import com.example.springjwt.exception.ExpiredException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -9,16 +10,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.security.SignatureException;
 
 @Slf4j(topic = "JwtFilter")
 @RequiredArgsConstructor
@@ -39,11 +43,11 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 claims = jwtUtil.getClaims(token);
             } catch (ExpiredJwtException e) {  //만약 토큰이 만료가 되었다면
-                log.error("Token expired");
-                return;
+                log.error("expired JWT Token");
+                throw new ExpiredException("토큰이 만료되었음");
             } catch (JwtException e) {  //토큰이 위조 되었다면
                 log.error("Invalid token");
-                return;
+                throw new BadCredentialsException("토큰이 위조되었음");
             }
             String email = claims.get("email", String.class);
             try {

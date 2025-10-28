@@ -26,4 +26,8 @@ public interface JwtConst {
     long ACCESSTOKEN_TIME = 60 * 60 * 1000L; // 1시간
 
     long REFRESH_TOKEN_TIME = 7*24 * 60 * 60 * 1000L; //7일
+
+    //토큰 카테고리
+    String CATEGORY_ACCESS = "access";
+    String CATEGORY_REFRESH = "refresh";
 }

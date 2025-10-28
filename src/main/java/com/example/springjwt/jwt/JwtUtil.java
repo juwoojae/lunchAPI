@@ -43,7 +43,7 @@ public class JwtUtil {
         /**
          * Jwt 토큰을 만들어서 반환하는 함수
          */
-    public String createJwt(Category category, String email, String role, Long expiredMs) {
+    public String createJwt(String category, String email, String role, Long expiredMs) {
         return Jwts.builder()
                 .claim(CLAIM_CATEGORY, category) // (Access / Refresh)
                 .claim(CLAIM_EMAIL, email) //표준 클레임
