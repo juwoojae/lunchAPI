@@ -12,23 +12,22 @@ import com.example.springjwt.entity.RoundEntity;
 import com.example.springjwt.entity.UserEntity;
 import com.example.springjwt.repository.MenuRepository;
 import com.example.springjwt.repository.RoundRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j(topic = "RoundService")
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RoundService {
 
-    MenuRepository menuRepository;
-    RoundRepository roundRepository;
+    private final MenuRepository menuRepository;
+    private final RoundRepository roundRepository;
 
     /**
      * 라운드는 하루에 하나만 생성할수 있다.
@@ -50,7 +49,7 @@ public class RoundService {
         }
 
         // DB에서 저장된 메뉴 조회 (단방향 기준)
-        List<CreateMenuResponse> menuResponses = menuRepository.findByRoundEntity_Id(saveRound.getId())
+        List<CreateMenuResponse> menuResponses = menuRepository.findByRound_Id(saveRound.getId())
                 .stream()
                 .map(menu -> new CreateMenuResponse(
                         menu.getId(),
@@ -73,12 +72,12 @@ public class RoundService {
     /**
      * 오늘의 라운드 조회
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public GetTodayRoundResponse todayRead(UserEntity user, LocalDate date) {
         RoundEntity findRound = roundRepository.findByDate(date).orElseThrow(
                 () -> new IllegalArgumentException("Round not found")
         );
-        List<GetTodayMenuResponse> menuResponses = menuRepository.findByRoundEntity_Id(findRound.getId())
+        List<GetTodayMenuResponse> menuResponses = menuRepository.findByRound_Id(findRound.getId())
                 .stream()
                 .map(menu -> new GetTodayMenuResponse(
                         menu.getId(),
@@ -102,13 +101,13 @@ public class RoundService {
     /**
      * 라운드 전체 조회
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<GetRoundResponse> read(UserEntity user) {
         List<RoundEntity> response = roundRepository.findAll();
         List<GetRoundResponse> roundResponses = new ArrayList<>();
         for (RoundEntity round : response) {
             Long roundId = round.getId();
-            List<MenuEntity> menus = menuRepository.findByRoundEntity_Id(roundId);
+            List<MenuEntity> menus = menuRepository.findByRound_Id(roundId);
             //new WinnerMenu()
             roundResponses.add(new GetRoundResponse(
                     roundId,
@@ -131,7 +130,7 @@ public class RoundService {
         if (!roundId.equals(user.getId())) {
             throw new IllegalArgumentException("id 가 일치하지 않는다");
         }
-        menuRepository.deleteAllByRoundEntity_Id(roundId);
+        menuRepository.deleteAllByRound_Id(roundId);
         roundRepository.deleteById(roundId);
     }
 }

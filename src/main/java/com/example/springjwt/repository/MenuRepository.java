@@ -8,10 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public interface MenuRepository extends JpaRepository<MenuEntity, Integer> {
-    List<MenuEntity> findByRoundEntity_Id(Long id);
+public interface MenuRepository extends JpaRepository<MenuEntity, Long> {
+
+    List<MenuEntity> findByRound_Id(Long id);
 
     @Transactional
-    void deleteAllByRoundEntity_Id(Long roundEntityId);
+    void deleteAllByRound_Id(Long roundEntityId);
 
 }

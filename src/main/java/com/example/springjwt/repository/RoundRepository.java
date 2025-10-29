@@ -15,7 +15,4 @@ public interface RoundRepository extends JpaRepository<RoundEntity, Long> {
 
     @Transactional
     Optional<RoundEntity> findByDate(LocalDate date); //해당 날짜를 가지는 컬럼 반환
-
-    @Transactional
-    void deleteById(Long roundId);
 }

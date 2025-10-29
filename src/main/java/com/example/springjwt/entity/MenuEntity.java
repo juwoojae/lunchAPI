@@ -19,7 +19,7 @@ public class MenuEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "round_id")
-    private RoundEntity roundEntity;
+    private RoundEntity round;
 
     private String name;
 
@@ -27,8 +27,8 @@ public class MenuEntity extends BaseEntity {
 
     private Integer price;
 
-    public MenuEntity(RoundEntity roundEntity, String name, Integer price, String type) {
-        this.roundEntity = roundEntity;
+    public MenuEntity(RoundEntity round, String name, Integer price, String type) {
+        this.round = round;
         this.name = name;
         this.price = price;
         this.type = type;
