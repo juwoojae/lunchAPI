@@ -6,8 +6,12 @@ import com.example.springjwt.dto.RefreshResponseDto;
 import com.example.springjwt.entity.UserEntity;
 import com.example.springjwt.exception.ExpiredException;
 import com.example.springjwt.exception.InvalidTokenException;
+import com.example.springjwt.exception.TokenMissingException;
 import com.example.springjwt.jwt.JwtUtil;
 import com.example.springjwt.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,8 +64,7 @@ public class AuthService {
      */
     public RefreshResponseDto reissueToken(String refreshToken) {
         //refresh Token 검증로직
-        if (validateToken(refreshToken)) throw new InvalidTokenException("타당하지 않은 토큰");
-        if (jwtUtil.isExpired(refreshToken)) throw new ExpiredException("토큰이 만료되었습니다");
+        validateToken(refreshToken);
         //유저 정보
         String email = jwtUtil.getClaims(refreshToken).get(CLAIM_EMAIL, String.class);
         String role = jwtUtil.getClaims(refreshToken).get(CLAIM_ROLE, String.class);
@@ -72,10 +75,23 @@ public class AuthService {
         return new RefreshResponseDto(newAccessToken, newRefreshToken);
     }
 
-    private boolean validateToken(String refreshToken) {
+    private void validateToken(String refreshToken) {
+        if (refreshToken == null) {
+            throw new TokenMissingException("토큰 유실");   //403
+        }
+        try {
+            Claims claims =  jwtUtil.getClaims(refreshToken); //토큰만료 + 위조 + 손상 검증
 
-        return refreshToken == null ||
-                !jwtUtil.getClaims(refreshToken).get(CLAIM_CATEGORY,String.class)
-                        .equals(CATEGORY_REFRESH); //토큰의 카테고리가 Refresh 토큰이 아닌경우
+            if (!jwtUtil.getClaims(refreshToken).get(CLAIM_CATEGORY, String.class)
+                    .equals(CATEGORY_REFRESH)) {
+                throw new InvalidTokenException("토큰 위조+손상");  //401
+            }
+        } catch (ExpiredJwtException e) {
+            log.error("expired JWT Token");
+            throw new ExpiredException("토큰이 만료되었음");  //토큰 만료 401
+        } catch (JwtException e) {
+            log.error("Invalid token");
+            throw new InvalidTokenException("토큰이 위조되었음");  //토큰이 위조/손상 401
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.example.springjwt.jwt;
 
 import com.example.springjwt.exception.ExpiredException;
+import com.example.springjwt.exception.InvalidTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -36,28 +37,29 @@ public class JwtFilter extends OncePerRequestFilter {
         //request 에서 Authorization 헤더를 찾음
         String tokenValue = jwtUtil.getTokenFromHeader(request);
 
-        Claims claims ;
+        Claims claims = null;
 
         if (StringUtils.hasText(tokenValue)) {
             String token = tokenValue.split(" ")[1]; //식별자 걷어내기 subString
             try {
                 claims = jwtUtil.getClaims(token);
-            } catch (ExpiredJwtException e) {  //만약 토큰이 만료가 되었다면
+            } catch (ExpiredJwtException e) {
                 log.error("expired JWT Token");
-                throw new ExpiredException("토큰이 만료되었음");
-            } catch (JwtException e) {  //토큰이 위조 되었다면
+                throw new ExpiredException("토큰이 만료되었음");  //토큰 만료 401
+            } catch (JwtException e) {
                 log.error("Invalid token");
-                throw new BadCredentialsException("토큰이 위조되었음");
+                throw new InvalidTokenException("토큰이 위조되었음");  //토큰이 위조/손상 401
             }
             String email = claims.get("email", String.class);
             try {
                 setAuthentication(email);
             } catch (Exception e) {
-                e.printStackTrace();
                 log.error(e.getMessage());
                 return;
             }
-        }
+        } //토큰이 없다면 다음필터로 넘어간다
+
+        log.info("nextfilter");
         filterChain.doFilter(request, response);
     }
 

@@ -27,16 +27,8 @@ public class JwtUtil {
     }
 
     /**
-     * Jwt Signature 가 만료되었는지 검증
-     */
-    public Boolean isExpired(String token) {
-        return getClaims(token).getExpiration().before(new Date());
-    }
-
-    /**
      * Jwt Signature 의 위조 + 만료 검증
      */
-
     public Claims getClaims(String token) {//정보를 찾아오려면 시큐리티 키값이 필요함
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
     }
