@@ -1,7 +1,6 @@
-package com.example.springjwt.dto;
+package com.example.springjwt.dto.auth;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class JoinRequestDto {

@@ -1,10 +1,9 @@
-package com.example.springjwt.dto;
+package com.example.springjwt.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Getter
 @AllArgsConstructor

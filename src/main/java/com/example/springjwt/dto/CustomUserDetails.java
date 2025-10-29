@@ -16,6 +16,10 @@ public class CustomUserDetails implements UserDetails {
     /**
      *  UserDetails 에서 Role 꺼내오기
      */
+    public UserEntity getUserEntity() {
+        return userEntity;
+    }
+
     public String getRole() {
         return userEntity.getRole();
     }

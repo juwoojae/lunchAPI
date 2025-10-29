@@ -1,7 +1,7 @@
 package com.example.springjwt.service;
 
-import com.example.springjwt.dto.JoinRequestDto;
-import com.example.springjwt.dto.JoinResponseDto;
+import com.example.springjwt.dto.auth.JoinRequestDto;
+import com.example.springjwt.dto.auth.JoinResponseDto;
 import com.example.springjwt.dto.RefreshResponseDto;
 import com.example.springjwt.entity.UserEntity;
 import com.example.springjwt.exception.ExpiredException;
@@ -18,8 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.awt.*;
 
 import static com.example.springjwt.jwt.JwtConst.*;
 

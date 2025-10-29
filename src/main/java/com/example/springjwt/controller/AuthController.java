@@ -1,7 +1,7 @@
 package com.example.springjwt.controller;
 
-import com.example.springjwt.dto.JoinRequestDto;
-import com.example.springjwt.dto.JoinResponseDto;
+import com.example.springjwt.dto.auth.JoinRequestDto;
+import com.example.springjwt.dto.auth.JoinResponseDto;
 import com.example.springjwt.dto.RefreshResponseDto;
 import com.example.springjwt.jwt.JwtUtil;
 import com.example.springjwt.service.AuthService;
