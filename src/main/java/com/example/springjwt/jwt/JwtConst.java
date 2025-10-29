@@ -23,7 +23,7 @@ public interface JwtConst {
     //토큰 식별자
     String BEARER_PREFIX = "Bearer "; // 규칙 토큰 앞에 붙이는것
     // 토큰 만료시간
-    long ACCESSTOKEN_TIME = 60 * 60 * 1000L; // 1시간
+    long ACCESSION_TIME = 60 * 60 * 1000L; // 1시간
 
     long REFRESH_TOKEN_TIME = 7*24 * 60 * 60 * 1000L; //7일
 

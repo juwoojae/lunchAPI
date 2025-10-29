@@ -67,7 +67,7 @@ public class AuthService {
         String email = jwtUtil.getClaims(refreshToken).get(CLAIM_EMAIL, String.class);
         String role = jwtUtil.getClaims(refreshToken).get(CLAIM_ROLE, String.class);
         //토큰 생성
-        String newAccessToken = jwtUtil.createJwt(CATEGORY_ACCESS, email, role, ACCESSTOKEN_TIME);//refresh 토큰 생성
+        String newAccessToken = jwtUtil.createJwt(CATEGORY_ACCESS, email, role, ACCESSION_TIME);//refresh 토큰 생성
         //refresh Rotate
         String newRefreshToken = jwtUtil.createJwt(CATEGORY_REFRESH, email, role, REFRESH_TOKEN_TIME);
         return new RefreshResponseDto(newAccessToken, newRefreshToken);

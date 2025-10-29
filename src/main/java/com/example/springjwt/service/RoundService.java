@@ -3,6 +3,7 @@ package com.example.springjwt.service;
 import com.example.springjwt.dto.menu.CreateMenuRequest;
 import com.example.springjwt.dto.menu.CreateMenuResponse;
 import com.example.springjwt.dto.menu.GetTodayMenuResponse;
+import com.example.springjwt.dto.menu.WinnerMenu;
 import com.example.springjwt.dto.round.CreateRoundRequest;
 import com.example.springjwt.dto.round.CreateRoundResponse;
 import com.example.springjwt.dto.round.GetRoundResponse;
@@ -12,6 +13,7 @@ import com.example.springjwt.entity.RoundEntity;
 import com.example.springjwt.entity.UserEntity;
 import com.example.springjwt.repository.MenuRepository;
 import com.example.springjwt.repository.RoundRepository;
+import com.example.springjwt.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ public class RoundService {
 
     private final MenuRepository menuRepository;
     private final RoundRepository roundRepository;
+    private final VoteRepository voteRepository;
 
     /**
      * 라운드는 하루에 하나만 생성할수 있다.
@@ -48,7 +51,7 @@ public class RoundService {
             menuRepository.save(saveMenu);
         }
 
-        // DB에서 저장된 메뉴 조회 (단방향 기준)
+        // DB에서 저장된 메뉴 조회
         List<CreateMenuResponse> menuResponses = menuRepository.findByRound_Id(saveRound.getId())
                 .stream()
                 .map(menu -> new CreateMenuResponse(
@@ -56,7 +59,7 @@ public class RoundService {
                         menu.getName(),
                         menu.getType(),
                         menu.getPrice(),
-                        0 // 나중에 구현
+                        voteRepository.countByMenu_Id(menu.getId())
                 ))
                 .toList();
 
@@ -77,24 +80,30 @@ public class RoundService {
         RoundEntity findRound = roundRepository.findByDate(date).orElseThrow(
                 () -> new IllegalArgumentException("Round not found")
         );
-        List<GetTodayMenuResponse> menuResponses = menuRepository.findByRound_Id(findRound.getId())
-                .stream()
-                .map(menu -> new GetTodayMenuResponse(
-                        menu.getId(),
-                        menu.getName(),
-                        menu.getType(),
-                        0,          // voteCount는 아직 구현 전
-                        false       // isVotedByMe는 아직 구현 전
-                ))
-                .toList();
+        List<MenuEntity> menus = menuRepository.findByRound_Id(findRound.getId());
+        List<GetTodayMenuResponse> menuResponses = new ArrayList<>();
 
-// RoundResponseDto 생성
+        int totalVotes = 0;   //전체 Vote 누적합
+
+        for (MenuEntity menu : menus) {
+            int vote = voteRepository.countByMenu_Id(menu.getId());
+            totalVotes += vote;
+
+            menuResponses.add(new GetTodayMenuResponse(
+                    menu.getId(),
+                    menu.getName(),
+                    menu.getType(),
+                    totalVotes,
+                    voteRepository.existsByUserAndMenu(user, menu) // menu 를 user 가 vote 했는지
+            ));
+        }
+        // RoundResponseDto 생성
         return new GetTodayRoundResponse(
                 findRound.getId(),
                 user.getName(),        // userName
                 findRound.getDate(),
                 menuResponses,
-                0                      // totalVotes, 나중에 계산해서 넣기
+                totalVotes
         );
     }
 
@@ -105,17 +114,30 @@ public class RoundService {
     public List<GetRoundResponse> read(UserEntity user) {
         List<RoundEntity> response = roundRepository.findAll();
         List<GetRoundResponse> roundResponses = new ArrayList<>();
+
         for (RoundEntity round : response) {
             Long roundId = round.getId();
             List<MenuEntity> menus = menuRepository.findByRound_Id(roundId);
-            //new WinnerMenu()
+
+            int totalVote = 0;  //총 투표수
+            WinnerMenu winnerMenu = null;
+            int maxVote = 0;   //최다 투표 메뉴의 투표수
+
+            for (MenuEntity menu : menus) {
+                int vote = voteRepository.countByMenu_Id(menu.getId());
+                totalVote += vote;
+                if(maxVote < vote) {
+                    maxVote = vote;
+                    winnerMenu = new WinnerMenu(menu.getName(), maxVote);
+                }
+            }
             roundResponses.add(new GetRoundResponse(
                     roundId,
                     user.getId(),
                     round.getDate(),
                     menus.size(),
-                    6,
-                    null
+                    totalVote,
+                    winnerMenu
             ));
         }
         return roundResponses;

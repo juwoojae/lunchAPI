@@ -63,7 +63,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String email = customUserDetails.getUsername();
         String role = customUserDetails.getRole();
         //토큰 생성
-        String accessToken = jwtUtil.createJwt(CATEGORY_ACCESS, email, role, ACCESSTOKEN_TIME);
+        String accessToken = jwtUtil.createJwt(CATEGORY_ACCESS, email, role, ACCESSION_TIME);
         String refreshToken = jwtUtil.createJwt(CATEGORY_REFRESH, email, role, REFRESH_TOKEN_TIME);
 
         jwtUtil.addJwtToHeader(response, accessToken); //Access 토큰 Http헤더에 넣기

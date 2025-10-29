@@ -21,4 +21,11 @@ public interface VoteRepository extends JpaRepository<VoteEntity, Long> {
     List<VoteEntity> findAllByUserAndMenu_Round_Id(UserEntity user, Long menuRoundEntityId);
     @Transactional
     List<VoteEntity> findAllByUserAndMenu_Round_Date(UserEntity user, LocalDate menuRoundEntityDate);
+
+    //집계 함수
+    @Transactional
+    int countByMenu_Id(Long menuId);
+    @Transactional
+    int countByUserAndMenu_Round_Id(UserEntity user,Long roundId);
+
 }
