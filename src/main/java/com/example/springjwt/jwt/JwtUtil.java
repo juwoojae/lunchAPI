@@ -39,7 +39,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .claim(CLAIM_CATEGORY, category) // (Access / Refresh)
                 .claim(CLAIM_EMAIL, email) //표준 클레임
-                .claim(CLAIM_ROLE, role) //payload 에 key - value 형태로 들어간다
+                .claim(CLAIM_ROLE, RoleUtil.toRole(role)) //payload 에 key - value 형태로 들어간다
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey) //signature 만들기

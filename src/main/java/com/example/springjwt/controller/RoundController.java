@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,10 @@ public class RoundController {
     private final UserRepository userRepository;
     private final RoundService roundService;
 
+    /**
+     *  admin 관리자만이 Round 를 생성할수 있다
+     */
+    @Secured("ROLE_ADMIN")
     @PostMapping
     public ResponseEntity<CreateRoundResponse> addRound(
             @AuthenticationPrincipal CustomUserDetails userDetails, // 현재 로그인한 유저

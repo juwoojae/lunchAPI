@@ -30,12 +30,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         setFilterProcessesUrl("/api/auth/login"); //로그인 처리 (Post /api/user/login)
     }
 
-    public LoginFilter(AuthenticationManager authenticationManager, AuthenticationManager authenticationManager1, JwtUtil jwtUtil) {
-        super(authenticationManager);
-        this.authenticationManager = authenticationManager1;
-        this.jwtUtil = jwtUtil;
-    }
-
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         log.info("attemptAuthentication");
