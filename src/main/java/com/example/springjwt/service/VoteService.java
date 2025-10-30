@@ -5,6 +5,7 @@ import com.example.springjwt.dto.vote.GetVoteResponse;
 import com.example.springjwt.entity.MenuEntity;
 import com.example.springjwt.entity.UserEntity;
 import com.example.springjwt.entity.VoteEntity;
+import com.example.springjwt.exception.DuplicateVoteException;
 import com.example.springjwt.repository.MenuRepository;
 import com.example.springjwt.repository.VoteRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 @Service
@@ -30,12 +32,12 @@ public class VoteService {
 
         Long menuId = requestDto.getMenuId();
         MenuEntity menu = menuRepository.findById(menuId).orElseThrow(
-                () -> new IllegalStateException("Menu Not Found")
+                () -> new NoSuchElementException("Menu Not Found")
         );
         // 중복 체크
         boolean alreadyVoted = voteRepository.existsByUserAndMenu(user, menu);
         if (alreadyVoted) {
-            throw new IllegalStateException("이미 투표한 메뉴입니다.");
+            throw new DuplicateVoteException("이미 투표한 메뉴입니다.");
         }
         // 투표 저장
         VoteEntity vote = new VoteEntity(user, menu);
@@ -65,7 +67,9 @@ public class VoteService {
 
     @Transactional
     public void remove(Long voteId, UserEntity user) {
-        if (!voteId.equals(user.getId())) {
+        VoteEntity vote = voteRepository.findById(voteId)
+                .orElseThrow(() -> new NoSuchElementException("투표가 존재하지 않습니다."));
+        if (!vote.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("id 가 일치하지 않는다");
         }
         menuRepository.deleteAllByRound_Id(voteId);

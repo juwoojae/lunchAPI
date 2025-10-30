@@ -11,6 +11,7 @@ import com.example.springjwt.dto.round.GetTodayRoundResponse;
 import com.example.springjwt.entity.MenuEntity;
 import com.example.springjwt.entity.RoundEntity;
 import com.example.springjwt.entity.UserEntity;
+import com.example.springjwt.exception.RoundAlreadyExistsException;
 import com.example.springjwt.repository.MenuRepository;
 import com.example.springjwt.repository.RoundRepository;
 import com.example.springjwt.repository.VoteRepository;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j(topic = "RoundService")
 @Service
@@ -41,7 +43,7 @@ public class RoundService {
         //만약 round Table 안에 같은 날짜의 컬럼이 존재하는경우 예외 발생
         LocalDate date = requestDto.getDate();
         if (roundRepository.existsByDate(date)) {
-            throw new IllegalArgumentException("Round already exists");
+            throw new RoundAlreadyExistsException("Round already exists");
         }
         //저장할 엔티티 생성
         RoundEntity roundEntity = new RoundEntity(user, requestDto.getDate());
@@ -78,7 +80,7 @@ public class RoundService {
     @Transactional(readOnly = true)
     public GetTodayRoundResponse todayRead(UserEntity user, LocalDate date) {
         RoundEntity findRound = roundRepository.findByDate(date).orElseThrow(
-                () -> new IllegalArgumentException("Round not found")
+                () -> new NoSuchElementException("Round not found")
         );
         List<MenuEntity> menus = menuRepository.findByRound_Id(findRound.getId());
         List<GetTodayMenuResponse> menuResponses = new ArrayList<>();
@@ -149,7 +151,10 @@ public class RoundService {
      */
     @Transactional
     public void remove(Long roundId, UserEntity user) {
-        if (!roundId.equals(user.getId())) {
+        RoundEntity round = roundRepository.findById(roundId).orElseThrow(
+                () -> new NoSuchElementException("Round Not Found")
+        );
+        if (!round.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("id 가 일치하지 않는다");
         }
         menuRepository.deleteAllByRound_Id(roundId);
