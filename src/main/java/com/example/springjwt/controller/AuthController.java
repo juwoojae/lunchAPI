@@ -8,6 +8,7 @@ import com.example.springjwt.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,7 @@ public class AuthController {
      * 회원 가입처리 컨트롤러
      */
     @PostMapping("/join")
-    public ResponseEntity<JoinResponseDto> joinProcess(@RequestBody JoinRequestDto joinRequestDto) {
+    public ResponseEntity<JoinResponseDto> joinProcess(@Valid @RequestBody JoinRequestDto joinRequestDto) {
         log.info("joinProcess {} {}", joinRequestDto.getEmail(), joinRequestDto.getPassword());
         JoinResponseDto result = authService.join(joinRequestDto);
         return new ResponseEntity<>(result, HttpStatus.CREATED);

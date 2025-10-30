@@ -9,7 +9,7 @@ import lombok.ToString;
 @Entity
 @Getter
 @Table(name = "menu")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor()
 public class MenuEntity extends BaseEntity {
 
     @Id
