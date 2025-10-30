@@ -1,9 +1,11 @@
 package com.example.springjwt.dto.auth;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class JoinRequestDto {
 
     @NotBlank

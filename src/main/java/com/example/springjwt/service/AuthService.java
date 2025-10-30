@@ -5,6 +5,7 @@ import com.example.springjwt.dto.auth.JoinResponseDto;
 import com.example.springjwt.dto.RefreshResponseDto;
 import com.example.springjwt.entity.UserEntity;
 import com.example.springjwt.entity.refresh.RefreshEntity;
+import com.example.springjwt.exception.EmailAlreadyExistsException;
 import com.example.springjwt.exception.ExpiredException;
 import com.example.springjwt.exception.InvalidTokenException;
 import com.example.springjwt.exception.TokenMissingException;
@@ -48,7 +49,7 @@ public class AuthService {
         Boolean isExist = userRepository.existsByEmail(email);
 
         if (isExist) {  //해당 Email 이 존재하는 경우
-            throw new DataIntegrityViolationException("이미 존재하는 이메일");
+            throw new EmailAlreadyExistsException("이미 존재하는 이메일");
         }
         UserEntity data = new UserEntity(email, name, passwordEncoder.encode(password), role);
         userRepository.save(data);

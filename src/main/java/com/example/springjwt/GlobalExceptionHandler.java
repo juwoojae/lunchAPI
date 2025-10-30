@@ -75,5 +75,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleVoteDomainErrors(DuplicateVoteException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
-
+    /**
+     * 도메인 정책 위반 - 회원 등록에서 하나의 이메일을 중복등록 하는경우
+     */
+    @ExceptionHandler (EmailAlreadyExistsException.class)
+    public ResponseEntity<String> handleUserDomainErrors(EmailAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
 }
